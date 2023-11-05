@@ -54,6 +54,7 @@ bool inLeft (string lexeme, vector<ruleSet> inpGramRule) {
 
 void concatTerms(string lexeme) {
     for (int i = 0; i < tokPrin.size(); i++) {
+
         if (lexeme.compare(tokPrin[i])== 0) {
 
             return;
@@ -64,9 +65,10 @@ void concatTerms(string lexeme) {
 
 }
 
-void addToNonTerminals(string lexeme) {
+void concatNonTerms(string lexeme) {
     for (int i = 0; i < nonTPrin.size(); i++) {
-        if (lexeme.compare(nonTPrin[i])== 0) {
+        if (lexeme.compare(nonTPrin[i]) == 0) {
+
             return;
 
         }
@@ -81,14 +83,18 @@ void syntaxErrorVerif() {
 }
 
 void termDeterm() {
-        for (int i = 0; i < inpGram.size(); i++) {
-        addToNonTerminals(inpGram[i].left);
+    for (int i = 0; i < inpGram.size(); i++) {
+        concatNonTerms(inpGram[i].left);
         for (int j = 0; j < inpGram[i].right.size(); j++) {
+
+
             if (inLeft(inpGram[i].right[j],inpGram)) {
 
-                addToNonTerminals(inpGram[i].right[j]);
+                concatNonTerms(inpGram[i].right[j]);
 
             } else {
+
+
                 concatTerms(inpGram[i].right[j]);
 
             }
@@ -121,9 +127,12 @@ void ReadGrammar()
     while (readingTo.token_type!=HASH&&readingTo.token_type!=END_OF_FILE) {
         ruleSet *rule = new ruleSet; 
         if (readingTo.token_type == ID) {
+
             rule->left = readingTo.lexeme;
+
             rule->canGen = false;
             rule->canReach = false;
+
             readingTo = lexer.GetToken();
 
             if (readingTo.token_type == ARROW) {
@@ -131,6 +140,7 @@ void ReadGrammar()
                 if (iterR(rule)) {
                     syntaxErrorVerif();
                     return;
+
                 }
                 readingTo = lexer.GetToken();
                 if (readingTo.token_type == STAR) {
@@ -141,16 +151,21 @@ void ReadGrammar()
 
                     delete rule;
                     syntaxErrorVerif();
+
                     return;
 
                 }
 
             } else {
+
                 delete rule;
                 syntaxErrorVerif();
+
                 return;
 
             }
+
+
         } else {
 
             syntaxErrorVerif();
@@ -163,14 +178,19 @@ void ReadGrammar()
     
     if (readingTo.token_type == END_OF_FILE) {
         syntaxErrorVerif();
+
         return;
     }
 
     if (readingTo.token_type == HASH) {
+
         readingTo = lexer.GetToken();
+
         if (readingTo.token_type!=END_OF_FILE) {
             syntaxErrorVerif();
             return;
+
+
         }
     }
     // cout << "0\n";
@@ -180,11 +200,15 @@ void ReadGrammar()
 void printTerminalsAndNoneTerminals()
 {
     termDeterm();
+
     for (int i = 0; i<tokPrin.size();i++) {
+
         cout<<tokPrin[i]<<" ";
 
     }
+
     for (int i = 0; i<nonTPrin.size();i++) {
+
         cout<<nonTPrin[i]<<" ";
 
     }
@@ -206,14 +230,18 @@ void reachVerifMeth(string lexeme){
         if (inpGram[i].left.compare(lexeme)== 0&&!inpGram[i].canReach) {
             inpGram[i].canReach=true;
             verifReah++;
+
         }
+
     }
 }
 
 bool generProc(string lexeme){
     for (int i = 0; i < inpGram.size(); i++) {
+        
         if (inpGram[i].left.compare(lexeme)== 0&&inpGram[i].canGen == true) {
            return true;
+
         }
     }
 
@@ -226,6 +254,7 @@ bool generSearch(int num){
     for (int i = 0; i < mainRule.right.size(); i++) {
         if (inLeft(mainRule.right[i],inpGram)&&!generProc(mainRule.right[i])) {
             return false;
+
         }
 
     }
@@ -234,37 +263,52 @@ bool generSearch(int num){
 
 void getredGram(){
     reachVerifMeth(inpGram[0].left);
-    int prev_reachable = 0;
-    int prev_generating = 0;
-    while (prev_generating!=genNumCheck||prev_reachable!=verifReah) {
+    int lastreachable = 0;
+    int lastgenerating = 0;
+    while (lastgenerating!=genNumCheck||lastreachable!=verifReah) {
         
-        prev_generating = genNumCheck;
-        prev_reachable = verifReah;
+        lastgenerating = genNumCheck;
+        lastreachable = verifReah;
         
         for (int i = 0; i < inpGram.size(); i++) {
-            if(inpGram[i].canGen ==false && generSearch(i)){
+            if (inpGram[i].canGen == false && generSearch(i)) {
+
                 inpGram[i].canGen = true;
                 genNumCheck++;
+
             }
         }
-        for (int i = 0; i<inpGram.size();i++) {
-            if (inpGram[i].canReach ==true) {
+
+        for (int i = 0; i < inpGram.size(); i++) {
+
+            if (inpGram[i].canReach == true) {
                 bool status = true;
                 for (int j = 0; j < inpGram[i].right.size(); j++) {
+
                     if(inLeft(inpGram[i].right[j],inpGram)&&!generProc(inpGram[i].right[j])){
+
                         status = false;
                         break;
                     }
+
+
                 }
+
                 if (status == true) {
                     if (!inpGram[i].canGen) {
+
+
                         inpGram[i].canGen=true;
+
                         genNumCheck++;
 
                     }
 
-                    for (int j= 0; j<inpGram[i].right.size();j++) {
+                    for (int j = 0; j < inpGram[i].right.size(); j++) {
+
+
                         if (inLeft(inpGram[i].right[j],inpGram)&&generProc(inpGram[i].right[j])) {
+
                             reachVerifMeth(inpGram[i].right[j]);
 
                         }
@@ -277,9 +321,13 @@ void getredGram(){
     }
     
     
-    for(int i = 0; i < inpGram.size(); i++){
-        if(inpGram[i].canGen==true&&inpGram[i].canReach == true){
+    for (int i = 0; i < inpGram.size(); i++) {
+
+        if (inpGram[i].canGen==true&&inpGram[i].canReach == true) {
+
             redGram.push_back(inpGram[i]);
+
+
         }
     }
 }
@@ -293,16 +341,25 @@ void RemoveUselessSymbols()
     getredGram();
     
     for (int i = 0; i < redGram.size(); i++) {
+
         cout<<redGram[i].left<<" -> ";
+
         if (redGram[i].right.size() == 0){
+
             cout<<"#";
-        } else{
+
+
+        } else {
+
             cout<<redGram[i].right[0];
+
         }
 
-        for(int j=1;j<redGram[i].right.size();j++){
+        for (int j = 1; j < redGram[i].right.size(); j++) {
             cout<<" "<<redGram[i].right[j];
+
         }
+
         cout<<endl;
 
 
@@ -311,28 +368,41 @@ void RemoveUselessSymbols()
 
 // Task 3
 struct newruleSet {
-    string left;
     vector<vector<string>> right;
+
+    string left;
+
 };
 
-vector<newruleSet> definition;
+vector<newruleSet> def;
+
 map < string,set<string> > firstSetList;
 
-void createNewRuleSet() {
+void devnooRS() {
+
     unordered_set<string> lefts;
+
     for (int i = 0; i < inpGram.size(); i++) {
+
         if (lefts.count(inpGram[i].left) == 0) {
-            newruleSet nrs;
-            nrs.left = inpGram[i].left;
-            nrs.right.push_back(inpGram[i].right);
-            definition.push_back(nrs);
+
+            newruleSet diffRuleSet;
+            diffRuleSet.left = inpGram[i].left;
+            diffRuleSet.right.push_back(inpGram[i].right);
+
+            def.push_back(diffRuleSet);
             lefts.insert(inpGram[i].left);
-        }
-        else {
-            for (int j = 0; j < definition.size(); j++) {
-                if (definition[j].left == inpGram[i].left) {
-                    definition[j].right.push_back(inpGram[i].right);
+
+        } else {
+
+            for (int j = 0; j < def.size(); j++) {
+
+                if (def[j].left == inpGram[i].left) {
+
+                    def[j].right.push_back(inpGram[i].right);
                     break;
+
+
                 }
             }
         }
@@ -340,123 +410,172 @@ void createNewRuleSet() {
     
 }
 
-bool isTerminal(string s) {
-     for (int i = 0;i<tokPrin.size();i++){
-        if(tokPrin[i].compare(s)== 0){
+bool termCheckBool(string s) {
+
+     for (int i = 0; i < tokPrin.size();i++) {
+
+        if (tokPrin[i].compare(s) == 0) {
+
             return true;
         }
      }
+
      return false;
+
 }
-bool isLast(string s, vector<string> vec, int index) {
-    if (index== vec.size()-1) {
+
+
+
+
+bool lastCheckBool(string s, vector<string> vec, int index) {
+
+    if (index == vec.size()-1) {
         return true;
+
+
     }
+
     return false;
 }
 
-bool hasEpsilon(string key) {
+bool epsiCheckBool(string key) {
+
     return firstSetList.find(key)->second.find("#")!=firstSetList.find(key)->second.end();
+
 }
 
-bool isSubset(set<string> set1, set<string> set2) {
-    for( string curr  : set2){
-        if(set1.count(curr)== 0){
+bool subsetCheckBool(set<string> initSet, set<string> secSet) {
+
+    for (string pres : secSet) {
+
+        if (initSet.count(pres) == 0) {
+
             return false;
+
         }
     }
     return true;
+
 }
 
-set<string> unify(set<string> set1, set<string> set2) {
-    set<string> result = set1;
-    result.insert(set2.begin(), set2.end());
+set<string> unify(set<string> initSet, set<string> secSet) {
+
+    set<string> result = initSet;
+
+    result.insert(secSet.begin(), secSet.end());
+
     return result;
 }
 
-void printFirstSets(map<string,set<string> > currMap){
-    for(string curr_nt : nonTPrin){
-        if(currMap.find(curr_nt)!=currMap.end()){
-            cout<<"FIRST"<<"("<<curr_nt<<") = { ";
+void firSetListOutput(map<string,set<string> > presMap){
+    for(string pres_nt : nonTPrin){
+
+        if(presMap.find(pres_nt)!=presMap.end()){
+
+            cout<<"FIRST"<<"("<<pres_nt<<") = { ";
             bool isFirst = true;
-            set<string> currSet= currMap[curr_nt];
-            if(currSet.find("#")!=currSet.end()){
+
+            set<string> presSet= presMap[pres_nt];
+
+            if( presSet.find("#")!=presSet.end()) {
                 cout<<"#";
                 isFirst = false;
+
             }
-            for(string curr_t : tokPrin){
-                if(currSet.find(curr_t)!=currSet.end()){
-                    if(isFirst){
+
+            for (string pres_t : tokPrin) {
+
+                if (presSet.find(pres_t)!=presSet.end()) {
+
+                    if (isFirst) {
+
                         isFirst=false;
-                        cout<<curr_t;
-                    }
-                    else{
-                    cout<<", "<<curr_t;
+                        cout<<pres_t;
+
+                    } else{
+
+                        cout<<", "<<pres_t;
+
                     }
                 }
             }
+
             cout<<" }";
 
         }
         cout<<endl;
     }
 }
-void getFirstSets()
+
+
+void firSetListRetr()
 {
 
     
     termDeterm();
-    createNewRuleSet();
-    for (newruleSet n : definition) {
+
+    devnooRS();
+    for (newruleSet n : def) {
         set<string> empty_set = {};
         firstSetList.insert(pair<string, set<string> >(n.left, empty_set));
       
     }
     
-    bool changed = true;
+    bool modif = true;
     
-    while (changed) {
-        changed =false;
-        for (newruleSet rule : definition) {
+    while (modif) {
+
+        modif = false;
+
+        for (newruleSet rule : def) {
             for (auto ors : rule.right) {
                 
                 if (ors.size() == 0) {
                     if (firstSetList[rule.left].count("#") == 0) {
-                        changed = true;
+                        modif = true;
                         firstSetList[rule.left].insert("#");
                     }
                     
                     continue;
+
                     }
                 for (int i = 0; i < ors.size(); i++) {
-                        if (isTerminal(ors[i])) {
+                        if (termCheckBool(ors[i])) {
                             if (firstSetList[rule.left].count(ors[i]) == 0) {
                                 firstSetList[rule.left].insert(ors[i]);
-                                changed = true;
+                                modif = true;
                             }
                             break;
-                        }
+                        } else {
 
-                    else {
                         set<string> old_set = firstSetList[rule.left];
                         set<string> newset = firstSetList[ors[i]];
+
                         newset.erase("#");
-                        if(!isSubset(old_set, newset)){
-                            changed = true;
+
+                        if(!subsetCheckBool(old_set, newset)){
+
+                            modif = true;
                             set<string> tempfirst;
                             tempfirst = unify(newset, firstSetList[rule.left]);
                             firstSetList[rule.left] = tempfirst;
+
+
                         }
 
-                        if (isLast(ors[i], ors, i)) {
-                            if (hasEpsilon(ors[i])&&firstSetList[rule.left].count("#") == 0) {
+                        if (lastCheckBool(ors[i], ors, i)) {
+
+                            if (epsiCheckBool(ors[i])&&firstSetList[rule.left].count("#") == 0) {
+
                                     firstSetList[rule.left].insert("#");
-                                    changed = true;
+                                    modif = true;
+
                             }
-                        }
-                        else {
-                            if (!(hasEpsilon(ors[i]))) {
+                        } else {
+                            if (!(epsiCheckBool(ors[i]))) {
+
                                 break;
+
                             }
                         }
                     }
@@ -472,29 +591,42 @@ void getFirstSets()
 void CalculateFirstSets()
 {
     // cout << "3\n";
-    getFirstSets();
-    printFirstSets(firstSetList);
+    firSetListRetr();
+
+    firSetListOutput(firstSetList);
+
+
 }
 
 // Task 4
-void printFollowSets(map<string,set<string> > currMap){
-    for(string curr_nt : nonTPrin){
-        if(currMap.find(curr_nt)!=currMap.end()){
-            cout<<"FOLLOW"<<"("<<curr_nt<<") = { ";
+void folSetOutp(map<string,set<string> > presMap){
+
+    for (string pres_nt : nonTPrin) {
+
+        if (presMap.find(pres_nt)!=presMap.end()) {
+
+            cout<<"FOLLOW"<<"("<<pres_nt<<") = { ";
             bool isFirst = true;
-            set<string> currSet= currMap[curr_nt];
-            if(currSet.find("$")!=currSet.end()){
+
+            set<string> presSet= presMap[pres_nt];
+
+            if (presSet.find("$")!=presSet.end()) {
+
                 cout<<"$";
                 isFirst = false;
+
             }
-            for(string curr_t : tokPrin){
-                if(currSet.find(curr_t)!=currSet.end()){
-                    if(isFirst){
+            for (string pres_t : tokPrin) {
+
+                if (presSet.find(pres_t)!=presSet.end()) {
+
+                    if (isFirst) {
                         isFirst=false;
-                        cout<<curr_t;
-                    }
-                    else{
-                    cout<<", "<<curr_t;
+                        cout<<pres_t;
+
+                    } else{
+                        cout<<", "<<pres_t;
+
                     }
                 }
             }
@@ -504,106 +636,142 @@ void printFollowSets(map<string,set<string> > currMap){
     }
 }
 map <string,set<string> > followSetList;
-void getFollowSets(){
-    getFirstSets();
-    for (newruleSet n : definition) {
+
+void folSetRetr(){
+
+    firSetListRetr();
+
+    for (newruleSet n : def) {
+
         set<string> empty_set;
         followSetList.insert(pair<string, set<string> >(n.left, empty_set));
+
     }
+
     followSetList[nonTPrin[0]].insert("$");
 
     cout<<endl;
-    for(newruleSet currSet: definition){
+    for (newruleSet presSet: def) {
         
-        for(int j= 0;j<currSet.right.size();j++){
-            if (currSet.right[j].size()>0) {
-            for (int k= 0;k<currSet.right[j].size()-1;k++) {
-                string curr_nt =currSet.right[j][k] ;
-                
-                if(inLeft(curr_nt,inpGram)){
-                        for(int t = k+1;t<currSet.right[j].size();t++){
-                            string check_nt =currSet.right[j][t];
-                            if(inLeft(currSet.right[j][t],inpGram)){
-                                bool hasEpsilon = firstSetList.find(check_nt)->second.find("#")!=firstSetList.find(check_nt)->second.end();
-                                set<string> newset = firstSetList[check_nt];
-                                newset.erase("#");
-                                set<string> tempfirst;
-                                tempfirst = unify(newset,followSetList[curr_nt]);
-                                followSetList[curr_nt] = tempfirst;
-                                if(!hasEpsilon){
+        for (int j= 0; j < presSet.right.size(); j++) {
+
+            if (presSet.right[j].size() > 0) {
+
+                for (int k = 0; k < presSet.right[j].size()-1; k++) {
+
+                    string pres_nt = presSet.right[j][k] ;
+                    
+                    if (inLeft(pres_nt,inpGram)){
+
+                            for(int t = k+1;t<presSet.right[j].size();t++) {
+
+                                string check_nt =presSet.right[j][t];
+
+                                if (inLeft(presSet.right[j][t],inpGram)) {
+
+                                    bool epsiCheckBool = firstSetList.find(check_nt)->second.find("#")!=firstSetList.find(check_nt)->second.end();
+                                    set<string> newset = firstSetList[check_nt];
+
+                                    newset.erase("#");
+                                    set<string> tempfirst;
+
+                                    tempfirst = unify(newset,followSetList[pres_nt]);
+
+                                    followSetList[pres_nt] = tempfirst;
+
+                                    if(!epsiCheckBool){
+                                        break;
+                                    }
+                                } else {
+                                    followSetList.find(pres_nt)->second.insert(check_nt);
+
                                     break;
                                 }
-                            } else {
-                                followSetList.find(curr_nt)->second.insert(check_nt);
-                                break;
                             }
-                        }
+                    }
+                    
+                    
                 }
-                
-                
-            }
             }
             //cout<<" , ";
             
         }
         //cout<<endl;
     }
-    //printFollowSets(followSetList);
+    //folSetOutp(followSetList);
     
-    bool changed = true;
+    bool modif = true;
     //while change is true : apply rules 2 and 3 for every rule
-    while (changed == true) {
-        changed = false;
-        for(newruleSet currSet : definition){
-            string left_nt = currSet.left;
-            for (int j= 0;j<currSet.right.size();j++){
+    while (modif == true) {
+        modif = false;
+
+        for (newruleSet presSet : def) {
+
+            string left_nt = presSet.left;
+
+            for (int j = 0; j < presSet.right.size();j++) {
                 
-                if(currSet.right[j].size()>0){
-                for(int k = currSet.right[j].size()-1;k>= 0;k--){
-                    string curr_nt = currSet.right[j][k];
+                if(presSet.right[j].size() > 0) {
+
+                    for(int k = presSet.right[j].size()-1;k>= 0;k--) {
+                        string pres_nt = presSet.right[j][k];
+                        
+                        if(inLeft(pres_nt,inpGram)){
                     
-                    if(inLeft(curr_nt,inpGram)){
-                
-                        if (!isSubset(followSetList[curr_nt],followSetList[left_nt])) {
-                            set<string> newset = followSetList[left_nt];
-                            set<string> tempfollow;
-                            tempfollow = unify(newset,followSetList[curr_nt]);
-                            followSetList[curr_nt] = tempfollow;
-                            changed = true;
-                        }
-                        bool hasEpsilon = firstSetList[curr_nt].count("#")==1;
-                        if(!hasEpsilon){
+                            if (!subsetCheckBool(followSetList[pres_nt],followSetList[left_nt])) {
+                                set<string> newset = followSetList[left_nt];
+                                set<string> tempfollow;
+
+                                tempfollow = unify(newset,followSetList[pres_nt]);
+                                followSetList[pres_nt] = tempfollow;
+
+                                modif = true;
+
+                            }
+
+                            bool epsiCheckBool = firstSetList[pres_nt].count("#") == 1;
+
+                            if(!epsiCheckBool) {
+                                break;
+                            }
+                        } else {
+
                             break;
+
+
                         }
+                        
                     }
-                    else{
-                        //stop iterating through if the curr_nt is terminal
-                        break;
-                }
-                    
-                }
                 //cout<<endl;
-            }
+                }
             }
         }
        
     }
     
 }
-bool intersectionIsNull(set<string> set1, set<string> set2){
-    for (string curr : set1 ){
-        if(set2.count(curr) == 1){
+
+bool nullCheckIntersecBool(set<string> initSet, set<string> secSet){
+    for (string pres : initSet) {
+
+        if(secSet.count(pres) == 1){
+
             return false;
+
         }
     }
+
+
     return true;
 }
 
 void CalculateFollowSets()
 {
     // cout << "4\n";
-    getFollowSets();
-    printFollowSets(followSetList);
+    folSetRetr();
+
+
+    folSetOutp(followSetList);
 
 }
 
@@ -611,65 +779,76 @@ void CalculateFollowSets()
 void CheckIfGrammarHasPredictiveParser()
 {
     // cout << "5\n";
-    getFollowSets();
+    folSetRetr();
 
-    getFirstSets();
+    firSetListRetr();
     
-    for(newruleSet currRule :definition){
-        set<string> major_comp; //idList1
-        if(currRule.right.size()>=1){
-        int it = 0;
-        for(int i = 0;i<currRule.right.size()-1;i++){
-            vector<string> rule = currRule.right[i];
-            it++;
-            set<string> currStrings;
-            if(rule.size()== 0){
-                currStrings.insert("#");
-            }
-            else{
-            for(int j = 0;j<rule.size();j++){
-                string curr = rule[j];
-                if(inLeft(curr,inpGram)){
-                     set<string> newset = firstSetList[curr];
-                    if(j!=rule.size()-1&&newset.count("#")==1){
-                        newset.erase("#");
-                    }
-                    currStrings = unify(currStrings,newset);
-                    if(firstSetList[curr].count("#")== 0){
-                        break;
-                    }
+    for(newruleSet presRule :def){
 
+        set<string> major_comp; 
+
+        if (presRule.right.size() >= 1) {
+            int it = 0;
+            for(int i = 0;i<presRule.right.size()-1;i++){
+                vector<string> rule = presRule.right[i];
+                it++;
+                set<string> presStrings;
+                if(rule.size()== 0){
+                    presStrings.insert("#");
                 }
                 else{
-                    currStrings.insert(curr);
-                    break;
+                for(int j = 0; j < rule.size(); j++){
+
+                    string pres = rule[j];
+                    if(inLeft(pres,inpGram)){
+
+                        set<string> newset = firstSetList[pres];
+
+                        if (j!=rule.size()-1&&newset.count("#") == 1) {
+                            newset.erase("#");
+
+
+                        }
+                        presStrings = unify(presStrings,newset);
+                        if (firstSetList[pres].count("#") == 0) {
+                            break;
+                        }
+
+                    } else {
+                        presStrings.insert(pres);
+                        break;
+
+                        
+                    }
                 }
             }
-        }
-            if(!intersectionIsNull(currStrings,major_comp)){
+                if (!nullCheckIntersecBool(presStrings,major_comp)) {
+                    
+                    for(string t : presStrings){
+                        //cout<< t;
+                    }
+                    //cout<<endl;
+                    for(string t : major_comp){
+                        //cout<< t;
+                    }        
+                    //cout<<endl;        
+                    cout<<"NO";
                 
-                for(string t : currStrings){
-                    //cout<< t;
+                    return;
+            
+                } else {
+                    major_comp = unify(major_comp,presStrings);
+
                 }
-                //cout<<endl;
-                for(string t : major_comp){
-                    //cout<< t;
-                }        
-                //cout<<endl;        
-                cout<<"NO";
-               
-                return;
-        
-            }
-            else{
-                major_comp = unify(major_comp,currStrings);
-            }
         }
     }
     } 
         for (int i = 0; i < nonTPrin.size(); i++) {
+
             if (firstSetList[nonTPrin[i]].count("#") == 1){
-                if(!intersectionIsNull(firstSetList[nonTPrin[i]],followSetList[nonTPrin[i]])) {
+
+                if(!nullCheckIntersecBool(firstSetList[nonTPrin[i]],followSetList[nonTPrin[i]])) {
+                    
                     cout<<"NO"<<endl;
                     return;
 
