@@ -32,6 +32,7 @@ struct ruleSet {
 };
 
 vector<ruleSet> inpGram;
+
 vector<string> tokPrin;
 vector<string> nonTPrin;
 
